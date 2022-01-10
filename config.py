@@ -82,8 +82,9 @@ keys = [
     Key([mod, "shift"], "r", lazy.restart()),
     Key([mod, "shift"], "x", lazy.shutdown()),
 
-
-
+#SUPER + SHIFT + CONTROL KEYS
+    Key([mod, "shift", "control"], "Return", lazy.spawn("poweroff")),
+    Key([mod, "shift", "control"], "r", lazy.spawn("reboot")),
 # CONTROL + ALT KEYS
 
     Key(["mod1", "control"], "o", lazy.spawn(home + '/.config/qtile/scripts/picom-toggle.sh')),
@@ -257,8 +258,11 @@ for i in range(len(group_names)):
         ))
 
 def go_to_group(qtile, group):
-    if group in '1234':
-        qtile.cmd_to_screen(1)
+    if(number_of_monitors == 2):
+        if group in '1234':
+            qtile.cmd_to_screen(1)
+        else:
+            qtile.cmd_to_screen(0)
     else:
         qtile.cmd_to_screen(0)
     qtile.groups_map[group].cmd_toscreen()
@@ -358,15 +362,20 @@ def init_widgets_defaults():
 
 widget_defaults = init_widgets_defaults()
 
+number_of_monitors = int(subprocess.check_output("xrandr | grep ' connected ' | wc -l", shell=True))
+
 @hook.subscribe.screen_change
 def restart_on_randr(_):
     qtile.cmd_reload_config();
 
-def init_widgets_list(sc):
-    if sc == 1:
-        vg = ['1','2','3','4']
+def init_widgets_list(screenIndex):
+    if(number_of_monitors == 1):
+        vg = ['1','2','3','4','4','5','6','7','8','9','0']
     else:
-        vg = ['5','6','7','8','9','0']
+       if(screenIndex == 0):
+           vg = ['5','6','7','8','9','0']
+       else:
+           vg = ['1','2','3','4']
     prompt = "{0}@{1}: ".format(os.environ["USER"], socket.gethostname())
     widgets_list = [
 
@@ -502,8 +511,6 @@ def init_widgets_list(sc):
               ]
     return widgets_list
 
-widgets_list = init_widgets_list(0)
-
 
 def init_widgets_screen1():
     widgets_screen1 = init_widgets_list(0)
@@ -579,7 +586,7 @@ main = None
 def start_once():
     home = os.path.expanduser('~')
     subprocess.call([home + '/.config/qtile/scripts/autostart.sh'])
-    subprocess.Popen(['feh','--bg-fill','~/Pictures/Wallpapers/Wave.png','--bg-fill','~/Pictures/Wallpapers/Wave.png'])
+    subprocess.call("feh --bg-fill ~/Pictures/Wallpapers/Wave.png --bg-fill ~/Pictures/Wallpapers/Wave.png", shell=True)
 @hook.subscribe.startup
 def start_always():
     # Set the cursor to something sane in X
@@ -632,4 +639,4 @@ focus_on_window_activation = "focus" # or smart
 
 wmname = "LG3D"
 
-os.system("feh --bg-fill ~/Pictures/Wallpapers/Wave.png --bg-fill ~/Pictures/Wallpapers/Wave.png")
+subprocess.call("feh --bg-fill ~/Pictures/Wallpapers/Wave.png --bg-fill ~/Pictures/Wallpapers/Wave.png", shell=True)
